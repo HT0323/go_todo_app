@@ -16,3 +16,4 @@
 
 .vscode/
 tmp/main
+Makefile
