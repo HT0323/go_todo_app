@@ -15,7 +15,7 @@ import (
 func New(ctx context.Context, cfg *config.Config) (*sqlx.DB, func(), error) {
 	db, err := sql.Open("mysql",
 		fmt.Sprintf(
-			"%s:%s@tcp(%s:%d)%s?parseTime=true",
+			"%s:%s@tcp(%s:%d)/%s?parseTime=true",
 			cfg.DBUser,
 			cfg.DBPassword,
 			cfg.DBHost,
