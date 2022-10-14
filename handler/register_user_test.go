@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,8 +31,16 @@ func TestRegisterUser(t *testing.T) {
 				rspFile: "testdata/register_user/ok_rsp.json.golden",
 			},
 		},
+		"name_duplicate_ng": {
+			reqFile: "testdata/register_user/name_duplicate_bad_req.json.golden",
+			want: want{
+				status:  http.StatusInternalServerError,
+				rspFile: "testdata/register_user/name_duplicate_bad_rsp.json.golden",
+			},
+		},
 	}
 	for n, tt := range tests {
+		tt := tt
 		t.Run(n, func(t *testing.T) {
 			t.Parallel()
 
@@ -49,6 +58,10 @@ func TestRegisterUser(t *testing.T) {
 				if tt.want.status == http.StatusOK {
 					return &entity.User{ID: 1}, nil
 				}
+				if tt.want.status == http.StatusInternalServerError {
+					return nil, fmt.Errorf("failed to register: cannot create same name user: duplicate entry")
+				}
+
 				return nil, errors.New("error from mock")
 			}
 
