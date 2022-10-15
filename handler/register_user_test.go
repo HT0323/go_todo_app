@@ -38,6 +38,13 @@ func TestRegisterUser(t *testing.T) {
 				rspFile: "testdata/register_user/name_duplicate_bad_rsp.json.golden",
 			},
 		},
+		"para_ng": {
+			reqFile: "testdata/register_user/ng_para_bad_req.json.golden",
+			want: want{
+				status:  http.StatusBadRequest,
+				rspFile: "testdata/register_user/ng_para_bad_rsp.json.golden",
+			},
+		},
 	}
 	for n, tt := range tests {
 		tt := tt

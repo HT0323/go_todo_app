@@ -1,6 +1,8 @@
 package config
 
-import "github.com/caarlos0/env/v6"
+import (
+	"github.com/caarlos0/env/v6"
+)
 
 type Config struct {
 	Env        string `env:"TODO_ENV" envDefault:"dev"`
