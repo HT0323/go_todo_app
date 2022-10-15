@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -31,6 +32,7 @@ func (l *Login) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}, http.StatusBadRequest)
 		return
 	}
+	fmt.Println(body.UserName)
 	jwt, err := l.Service.Login(ctx, body.UserName, body.Password)
 	if err != nil {
 		RespondJSON(ctx, w, &ErrResponse{
@@ -43,5 +45,6 @@ func (l *Login) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}{
 		AccessToken: jwt,
 	}
+
 	RespondJSON(r.Context(), w, rsp, http.StatusOK)
 }
