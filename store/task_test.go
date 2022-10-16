@@ -13,7 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func prepareUser(ctx context.Context, t *testing.T, db Execer) entity.UserID {
+func prepareUser(ctx context.Context, t *testing.T, db Execer) (entity.UserID, string) {
 	t.Helper()
 	u := fixture.User(nil)
 	result, err := db.ExecContext(ctx, "INSERT INTO user (name, password, role, created, modified) VALUES (?, ?, ?, ?, ?);", u.Name, u.Password, u.Role, u.Created, u.Modified)
@@ -24,13 +24,13 @@ func prepareUser(ctx context.Context, t *testing.T, db Execer) entity.UserID {
 	if err != nil {
 		t.Fatalf("got user_id: %v", err)
 	}
-	return entity.UserID(id)
+	return entity.UserID(id), u.Name
 }
 
 func prepareTasks(ctx context.Context, t *testing.T, con Execer) (entity.UserID, entity.Tasks) {
 	t.Helper()
-	userID := prepareUser(ctx, t, con)
-	otherUserID := prepareUser(ctx, t, con)
+	userID, _ := prepareUser(ctx, t, con)
+	otherUserID, _ := prepareUser(ctx, t, con)
 	c := clock.FixedClocker{}
 	wants := entity.Tasks{
 		{

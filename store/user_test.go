@@ -8,6 +8,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/HT0323/go_todo_app/clock"
 	"github.com/HT0323/go_todo_app/entity"
+	"github.com/HT0323/go_todo_app/testutil"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -41,5 +42,26 @@ func TestRepository_Register(t *testing.T) {
 	r := &Repository{Clocker: c}
 	if err := r.RegisterUser(ctx, xdb, okUser); err != nil {
 		t.Errorf("want no error, but got %v", err)
+	}
+}
+
+func TestRepository_GetUser(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	tx, err := testutil.OpenDBForTest(t).BeginTxx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, wantName := prepareUser(ctx, t, tx)
+
+	c := clock.FixedClocker{}
+
+	r := &Repository{Clocker: c}
+	u, err := r.GetUser(ctx, tx, wantName)
+	if err != nil {
+		t.Errorf("want no error, but got %v", err)
+	}
+	if u.Name != wantName {
+		t.Errorf("want %s, but %s", wantName, u.Name)
 	}
 }
