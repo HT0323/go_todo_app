@@ -15,16 +15,16 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
+const (
+	RoleKey     = "role"
+	UserNameKey = "user_name"
+)
+
 //go:embed cert/secret.pem
 var rawPrivKey []byte
 
 //go:embed cert/public.pem
 var rawPubKey []byte
-
-const (
-	RoleKey     = "role"
-	UserNameKey = "user_name"
-)
 
 type JWTer struct {
 	PrivateKey, PublicKey jwk.Key
@@ -59,7 +59,7 @@ func parse(rawKey []byte) (jwk.Key, error) {
 	if err != nil {
 		return nil, err
 	}
-	return key, err
+	return key, nil
 }
 
 func (j *JWTer) GenerateToken(ctx context.Context, u entity.User) ([]byte, error) {
@@ -72,13 +72,13 @@ func (j *JWTer) GenerateToken(ctx context.Context, u entity.User) ([]byte, error
 		Claim(RoleKey, u.Role).
 		Claim(UserNameKey, u.Name).
 		Build()
-
 	if err != nil {
-		return nil, fmt.Errorf("GetToken: failed to build token: %w", err)
+		return nil, fmt.Errorf("GenerateToken: failed to build token: %w", err)
 	}
 	if err := j.Store.Save(ctx, tok.JwtID(), u.ID); err != nil {
 		return nil, err
 	}
+
 	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256, j.PrivateKey))
 	if err != nil {
 		return nil, err
@@ -107,6 +107,22 @@ func (j *JWTer) GetToken(ctx context.Context, r *http.Request) (jwt.Token, error
 type userIDKey struct{}
 type roleKey struct{}
 
+func (j *JWTer) FillContext(r *http.Request) (*http.Request, error) {
+	token, err := j.GetToken(r.Context(), r)
+	if err != nil {
+		return nil, err
+	}
+	uid, err := j.Store.Load(r.Context(), token.JwtID())
+	if err != nil {
+		return nil, err
+	}
+	ctx := SetUserID(r.Context(), uid)
+
+	ctx = SetRole(ctx, token)
+	clone := r.Clone(ctx)
+	return clone, nil
+}
+
 func SetUserID(ctx context.Context, uid entity.UserID) context.Context {
 	return context.WithValue(ctx, userIDKey{}, uid)
 }
@@ -127,21 +143,6 @@ func SetRole(ctx context.Context, tok jwt.Token) context.Context {
 func GetRole(ctx context.Context) (string, bool) {
 	role, ok := ctx.Value(roleKey{}).(string)
 	return role, ok
-}
-
-func (j *JWTer) FillContext(r *http.Request) (*http.Request, error) {
-	token, err := j.GetToken(r.Context(), r)
-	if err != nil {
-		return nil, err
-	}
-	uid, err := j.Store.Load(r.Context(), token.JwtID())
-	if err != nil {
-		return nil, err
-	}
-	ctx := SetUserID(r.Context(), uid)
-	ctx = SetRole(ctx, token)
-	clone := r.Clone(ctx)
-	return clone, nil
 }
 
 func IsAdmin(ctx context.Context) bool {
