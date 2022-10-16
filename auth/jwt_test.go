@@ -32,7 +32,6 @@ func TestEmbed(t *testing.T) {
 	}
 }
 
-// デバッグコード
 func TestJWTer(t *testing.T) {
 	store := &store.KVS{Cli: testutil.OpenRedisForTest(t)}
 	wantID := entity.UserID(20)
@@ -59,7 +58,6 @@ func TestJWTer(t *testing.T) {
 	req.Header.Set(`Authorization`, fmt.Sprintf(`Bearer %s`, signed))
 	t.Logf("generated\n%s\n", signed)
 
-	// HTTPハンドラーが受け取ったリクエストを想定
 	req, err = sut.FillContext(req)
 	if err != nil {
 		t.Fatalf("failed to initialize request: %v", err)

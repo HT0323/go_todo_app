@@ -20,6 +20,10 @@ func TestSetEnvNew(t *testing.T) {
 	t.Setenv("TODO_DB_PASSWORD", fmt.Sprint(wantDbPassword))
 	wantDbName := "test"
 	t.Setenv("TODO_DB_NAME", fmt.Sprint(wantDbName))
+	wantRedisHost := "127.0.0.9"
+	t.Setenv("TODO_REDIS_HOST", fmt.Sprint(wantRedisHost))
+	wantRedisPort := 3335
+	t.Setenv("TODO_REDIS_PORT", fmt.Sprint(wantRedisPort))
 
 	got, err := New()
 	if err != nil {
@@ -45,6 +49,12 @@ func TestSetEnvNew(t *testing.T) {
 	}
 	if got.DBName != wantDbName {
 		t.Errorf("want %s, but %s", wantDbName, got.DBName)
+	}
+	if got.RedisHost != wantRedisHost {
+		t.Errorf("want %s, but %s", wantRedisHost, got.RedisHost)
+	}
+	if got.RedisPort != wantRedisPort {
+		t.Errorf("want %d, but %d", wantRedisPort, got.RedisPort)
 	}
 }
 
@@ -56,6 +66,8 @@ func TestDefaultEnvNew(t *testing.T) {
 	wantDbUser := "todo"
 	wantDbPassword := "todo"
 	wantDbName := "todo"
+	wantRedisHost := "127.0.0.1"
+	wantRedisPort := 6379
 
 	got, err := New()
 	if err != nil {
@@ -81,5 +93,11 @@ func TestDefaultEnvNew(t *testing.T) {
 	}
 	if got.DBName != wantDbName {
 		t.Errorf("want %s, but %s", wantDbName, got.DBName)
+	}
+	if got.RedisHost != wantRedisHost {
+		t.Errorf("want %s, but %s", wantRedisHost, got.RedisHost)
+	}
+	if got.RedisPort != wantRedisPort {
+		t.Errorf("want %d, but %d", wantRedisPort, got.RedisPort)
 	}
 }
