@@ -2,18 +2,10 @@ package handler
 
 import (
 	"net/http"
-
-	"github.com/HT0323/go_todo_app/entity"
 )
 
 type ListTask struct {
 	Service ListTasksService
-}
-
-type task struct {
-	ID     entity.TaskID     `json:"id"`
-	Title  string            `json:"title"`
-	Status entity.TaskStatus `json:"status"`
 }
 
 func (lt *ListTask) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -25,9 +17,9 @@ func (lt *ListTask) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}, http.StatusInternalServerError)
 		return
 	}
-	rsp := []task{}
+	rsp := []Task{}
 	for _, t := range tasks {
-		rsp = append(rsp, task{
+		rsp = append(rsp, Task{
 			ID:     t.ID,
 			Title:  t.Title,
 			Status: t.Status,
