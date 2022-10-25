@@ -73,6 +73,7 @@ func prepareTasks(ctx context.Context, t *testing.T, con Execer) (entity.UserID,
 	tasks[0].ID = entity.TaskID(id)
 	tasks[1].ID = entity.TaskID(id + 1)
 	tasks[2].ID = entity.TaskID(id + 2)
+	wants[0].ID = entity.TaskID(id)
 	return userID, wants
 }
 
@@ -93,6 +94,32 @@ func TestRepository_ListTasks(t *testing.T) {
 	}
 	if d := cmp.Diff(gots, wants); len(d) != 0 {
 		t.Errorf("differs: (-got +want)\n%s", d)
+	}
+}
+
+func TestRepository_GetTask(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	tx, err := testutil.OpenDBForTest(t).BeginTxx(ctx, nil)
+	t.Cleanup(func() { _ = tx.Rollback() })
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantUserID, wants := prepareTasks(ctx, t, tx)
+
+	sut := &Repository{}
+	got, err := sut.GetTask(ctx, tx, wantUserID, int(wants[0].ID))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got.Status != wants[0].Status {
+		t.Errorf("want %s, but %s", wants[0].Status, got.Status)
+	}
+	if got.Title != wants[0].Title {
+		t.Errorf("want %s, but %s", wants[0].Title, got.Title)
+	}
+	if got.UserID != wants[0].UserID {
+		t.Errorf("want %d, but %d", wants[0].UserID, got.UserID)
 	}
 }
 
