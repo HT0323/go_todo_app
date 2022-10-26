@@ -74,6 +74,77 @@ func (mock *ListTasksServiceMock) ListTasksCalls() []struct {
 	return calls
 }
 
+// Ensure, that GetTaskServiceMock does implement GetTaskService.
+// If this is not the case, regenerate this file with moq.
+var _ GetTaskService = &GetTaskServiceMock{}
+
+// GetTaskServiceMock is a mock implementation of GetTaskService.
+//
+// 	func TestSomethingThatUsesGetTaskService(t *testing.T) {
+//
+// 		// make and configure a mocked GetTaskService
+// 		mockedGetTaskService := &GetTaskServiceMock{
+// 			GetTaskFunc: func(ctx context.Context, taskID int) (*entity.Task, error) {
+// 				panic("mock out the GetTask method")
+// 			},
+// 		}
+//
+// 		// use mockedGetTaskService in code that requires GetTaskService
+// 		// and then make assertions.
+//
+// 	}
+type GetTaskServiceMock struct {
+	// GetTaskFunc mocks the GetTask method.
+	GetTaskFunc func(ctx context.Context, taskID int) (*entity.Task, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// GetTask holds details about calls to the GetTask method.
+		GetTask []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// TaskID is the taskID argument value.
+			TaskID int
+		}
+	}
+	lockGetTask sync.RWMutex
+}
+
+// GetTask calls GetTaskFunc.
+func (mock *GetTaskServiceMock) GetTask(ctx context.Context, taskID int) (*entity.Task, error) {
+	if mock.GetTaskFunc == nil {
+		panic("GetTaskServiceMock.GetTaskFunc: method is nil but GetTaskService.GetTask was just called")
+	}
+	callInfo := struct {
+		Ctx    context.Context
+		TaskID int
+	}{
+		Ctx:    ctx,
+		TaskID: taskID,
+	}
+	mock.lockGetTask.Lock()
+	mock.calls.GetTask = append(mock.calls.GetTask, callInfo)
+	mock.lockGetTask.Unlock()
+	return mock.GetTaskFunc(ctx, taskID)
+}
+
+// GetTaskCalls gets all the calls that were made to GetTask.
+// Check the length with:
+//     len(mockedGetTaskService.GetTaskCalls())
+func (mock *GetTaskServiceMock) GetTaskCalls() []struct {
+	Ctx    context.Context
+	TaskID int
+} {
+	var calls []struct {
+		Ctx    context.Context
+		TaskID int
+	}
+	mock.lockGetTask.RLock()
+	calls = mock.calls.GetTask
+	mock.lockGetTask.RUnlock()
+	return calls
+}
+
 // Ensure, that AddTaskServiceMock does implement AddTaskService.
 // If this is not the case, regenerate this file with moq.
 var _ AddTaskService = &AddTaskServiceMock{}
